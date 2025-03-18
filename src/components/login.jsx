@@ -33,7 +33,7 @@ const TelegramLogin = () => {
 
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 font-sans text-gray-100">
-            <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border-l-4 border-purple-500">
+            <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border-t-4 border-b-4 border-purple-500">
 
                 {/* Main Content */}
                 <div className="px-8 py-6 flex flex-col items-center">
