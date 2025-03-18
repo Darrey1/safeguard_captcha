@@ -1,15 +1,43 @@
 import React, { useState } from 'react';
-
-const TelegramLogin = () => {
+import { useNavigate } from "react-router-dom";
+import { toast } from 'react-toastify';
+const TelegramLogin = ({ setPhone }) => {
     const [phoneNumber, setPhoneNumber] = useState('+1 --- --- ----');
     const [country, setCountry] = useState('United States');
     const [countryCode, setCountryCode] = useState('+1');
+
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+
 
     const handlePhoneNumberFocus = () => {
         if (phoneNumber === `${countryCode} --- --- ----`) {
             setPhoneNumber(`${countryCode} `);
         }
     };
+
+
+    const handleClick = async () => {
+        const trimmedPhoneNumber = phoneNumber.trim();
+        const phoneRegex = new RegExp(`^\\${countryCode}\\s?\\d{7,15}$`);
+
+        if (!trimmedPhoneNumber || trimmedPhoneNumber === `${countryCode} --- --- ----` || !phoneRegex.test(trimmedPhoneNumber)) {
+            toast.error("Please enter a valid phone number");
+            return;
+        }
+
+        setLoading(true);
+        setPhone(trimmedPhoneNumber);
+
+        setTimeout(() => {
+            setLoading(false);
+            toast.success("OTP sent successfully");
+            navigate("/verify");
+        }, 3000);
+    };
+
+
+
 
     const handlePhoneNumberBlur = () => {
         if (phoneNumber === `${countryCode} ` || phoneNumber === countryCode) {
@@ -89,11 +117,36 @@ const TelegramLogin = () => {
                         </div>
                     </div>
 
-                    {/* Button */}
                     <button
-                        className="w-full bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-lg py-4 text-white font-medium mt-8 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50"
+                        onClick={handleClick}
+                        disabled={loading}
+                        className={`w-full bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-lg py-4 text-white font-medium mt-8 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 flex justify-center items-center ${loading ? "opacity-70 cursor-not-allowed" : ""
+                            }`}
                     >
-                        NEXT
+                        {loading ? (
+                            <svg
+                                className="animate-spin h-5 w-5 mr-2 text-white"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v4l3.5-3.5L12 0V4a8 8 0 01-8 8z"
+                                ></path>
+                            </svg>
+                        ) : (
+                            "NEXT"
+                        )}
                     </button>
 
                     {/* Alternative login */}
