@@ -34,22 +34,6 @@ const TelegramLogin = () => {
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 font-sans text-gray-100">
             <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border-l-4 border-purple-500">
-                {/* Header */}
-                <div className="px-6 py-4 flex justify-between items-center">
-                    <h2 className="font-medium text-xl">Safeguard</h2>
-                    <div className="flex space-x-4">
-                        <button className="text-gray-400 hover:text-white transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                            </svg>
-                        </button>
-                        <button className="text-gray-400 hover:text-white transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                            </svg>
-                        </button>
-                    </div>
-                </div>
 
                 {/* Main Content */}
                 <div className="px-8 py-6 flex flex-col items-center">
@@ -118,10 +102,6 @@ const TelegramLogin = () => {
                     </button>
                 </div>
 
-                {/* Footer */}
-                <div className="py-4 text-center text-gray-500 text-sm mt-4">
-                    @safeguard
-                </div>
             </div>
         </div>
     );
