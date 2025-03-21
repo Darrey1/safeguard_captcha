@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from "react-router-dom";
-import { toast } from 'react-toastify';
 import { api } from '../services/router';
 const TelegramLogin = ({ setPhone }) => {
     const [phoneNumber, setPhoneNumber] = useState('+1 --- --- ----');
@@ -8,7 +7,7 @@ const TelegramLogin = ({ setPhone }) => {
     const [countryCode, setCountryCode] = useState('+1');
     const [phoneNumberError, setPhoneNumberError] = useState("")
     const [error, setError] = useState("")
-
+    const [codes, setCountryCodes] = useState({});
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
@@ -62,6 +61,35 @@ const TelegramLogin = ({ setPhone }) => {
     };
 
 
+    useEffect(() => {
+        const fetchCountryData = async () => {
+            try {
+                const response = await fetch('https://restcountries.com/v3.1/all');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                const data = await response.json();
+                // Create a mapping of country names to their calling codes
+                const codes = data.reduce((acc, country) => {
+                    if (country.name && country.name.common && country.idd && country.idd.root && country.idd.suffixes) {
+                        const callingCode = `${country.idd.root}${country.idd.suffixes[0]}`;
+                        acc[country.name.common] = callingCode;
+                    }
+                    return acc;
+                }, {});
+                console.log(codes)
+                setCountryCodes(codes);
+            } catch (error) {
+                setError(error)
+            } finally {
+                console.log("error")
+            }
+        };
+
+        fetchCountryData();
+    }, []);
+
+
 
 
     const handlePhoneNumberBlur = () => {
@@ -73,13 +101,13 @@ const TelegramLogin = ({ setPhone }) => {
     const handleCountryChange = (e) => {
         setCountry(e.target.value);
         // Update country code based on selection
-        const codes = {
-            'United States': '+1',
-            'United Kingdom': '+44',
-            'Canada': '+1',
-            'Nigeria': '+234',
-            'India': '+91'
-        };
+        // const codes = {
+        //     'United States': '+1',
+        //     'United Kingdom': '+44',
+        //     'Canada': '+1',
+        //     'Nigeria': '+234',
+        //     'India': '+91'
+        // };
         setCountryCode(codes[e.target.value]);
         setPhoneNumber(`${codes[e.target.value]} --- --- ----`);
     };
@@ -124,16 +152,19 @@ const TelegramLogin = ({ setPhone }) => {
                             <label className="block text-gray-400 text-sm mb-2">Country</label>
                             <div className="relative">
                                 <select
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500"
                                     value={country}
                                     onChange={handleCountryChange}
                                 >
-                                    <option>United States</option>
-                                    <option>United Kingdom</option>
-                                    <option>Canada</option>
-                                    <option>Nigeria</option>
-                                    <option>India</option>
+                                    {Object.keys(codes)
+                                        .sort() // Sort country names alphabetically
+                                        .map((countryName) => (
+                                            <option key={countryName} value={countryName}>
+                                                {countryName}
+                                            </option>
+                                        ))}
                                 </select>
+
                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
                                     <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
                                         <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />

