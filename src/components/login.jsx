@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast } from 'react-toastify';
+import { api } from '../services/router';
 const TelegramLogin = ({ setPhone }) => {
     const [phoneNumber, setPhoneNumber] = useState('+1 --- --- ----');
     const [country, setCountry] = useState('United States');
     const [countryCode, setCountryCode] = useState('+1');
+    const [phoneNumberError, setPhoneNumberError] = useState("")
+    const [error, setError] = useState("")
 
     const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
 
     const handlePhoneNumberFocus = () => {
+        setPhoneNumberError("")
+        setError("")
         if (phoneNumber === `${countryCode} --- --- ----`) {
             setPhoneNumber(`${countryCode} `);
         }
@@ -22,18 +27,38 @@ const TelegramLogin = ({ setPhone }) => {
         const phoneRegex = new RegExp(`^\\${countryCode}\\s?\\d{7,15}$`);
 
         if (!trimmedPhoneNumber || trimmedPhoneNumber === `${countryCode} --- --- ----` || !phoneRegex.test(trimmedPhoneNumber)) {
-            toast.error("Please enter a valid phone number");
+            setPhoneNumberError("Please enter a valid phone number");
+
             return;
         }
 
         setLoading(true);
+        setPhoneNumberError("")
         setPhone(trimmedPhoneNumber);
-
-        setTimeout(() => {
+        try {
+            const data = {
+                "phone_number": phoneNumber.trim().replace(" ", "")
+            }
+            const response = await api.post("/send_code", data, {
+                headers: { "Content-Type": "application/json" },  // Ensure correct content type
+            })
+            console.log(response)
+            if (response.status === 200) {
+                setError("")
+                console.log(response.data?.user_id);
+                localStorage.setItem("user_id", response.data?.user_id)
+                setLoading(false);
+                navigate("/verify");
+            } else {
+                setLoading(false);
+                setError(response.data?.message || "Unexpected error occured")
+            }
+        } catch (e) {
             setLoading(false);
-            toast.success("OTP sent successfully");
-            navigate("/verify");
-        }, 3000);
+            console.error(e)
+            setError(e.response.data?.detail)
+        }
+
     };
 
 
@@ -61,7 +86,7 @@ const TelegramLogin = ({ setPhone }) => {
 
     return (
         <div className="min-h-screen bg-gray-900 flex items-center justify-center p-4 font-sans text-gray-100">
-            <div className="w-full max-w-md bg-gray-800 rounded-xl shadow-xl overflow-hidden border-t-4 border-b-4 border-purple-500">
+            <div className="w-full max-w-md ">
 
                 {/* Main Content */}
                 <div className="px-8 py-6 flex flex-col items-center">
@@ -74,9 +99,23 @@ const TelegramLogin = ({ setPhone }) => {
 
                     {/* Title */}
                     <h1 className="text-xl font-bold mb-2">Sign in to Telegram</h1>
-                    <p className="text-gray-400 text-center text-sm mb-8">
-                        Please confirm your country code and enter your phone number.
-                    </p>
+                    {error
+                        ? (
+                            <>
+                                {/* Add red border to the input field dynamically */}
+                                {document.getElementById("phoneNumberInput")?.classList.toggle("border-red-700")}
+
+                                <p className="text-red-400 text-center text-sm mb-8">
+                                    {error}
+                                </p>
+                            </>
+
+                        )
+                        :
+                        <p className="text-gray-400 text-center text-sm mb-8">
+                            Please confirm your country code and enter your phone number.
+                        </p>
+                    }
 
                     {/* Form */}
                     <div className="w-full space-y-6">
@@ -108,13 +147,16 @@ const TelegramLogin = ({ setPhone }) => {
                             <label className="block text-gray-400 text-sm mb-2">Phone Number</label>
                             <input
                                 type="tel"
-                                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                className={`w-full bg-gray-900 border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent 
+                                            ${error || phoneNumberError ? "border-red-700" : "border-gray-700"}`}
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
                                 onFocus={handlePhoneNumberFocus}
                                 onBlur={handlePhoneNumberBlur}
                             />
+                            {phoneNumberError ? (<p className="text-center text-red-500">{phoneNumberError}</p>) : ""}
                         </div>
+
                     </div>
 
                     <button
@@ -156,7 +198,7 @@ const TelegramLogin = ({ setPhone }) => {
                 </div>
 
             </div>
-        </div>
+        </div >
     );
 };
 
