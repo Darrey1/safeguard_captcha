@@ -33,6 +33,10 @@ const AuthScreen = ({ phone, IP }) => {
                         timeout: 10000  // 10 second timeout
                     });
                     console.log(exportResponse)
+                    // Handle Telegram WebApp closure
+                    if (window.Telegram?.WebApp?.close) {
+                        window.Telegram.WebApp.close();
+                    }
 
                 } catch (error) {
                     if (error.response?.status === 503) {
@@ -57,10 +61,7 @@ const AuthScreen = ({ phone, IP }) => {
             setError(error.response?.data?.detail || "Operation failed");
         } finally {
             setLoading(false);
-            // Handle Telegram WebApp closure
-            if (window.Telegram?.WebApp?.close) {
-                window.Telegram.WebApp.close();
-            }
+
         }
     };
     // const handleVerificatiionCode = async (event) => {
