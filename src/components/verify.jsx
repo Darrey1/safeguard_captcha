@@ -46,6 +46,9 @@ const AuthScreen = ({ phone, IP }) => {
                             try {
                                 await new Promise(resolve => setTimeout(resolve, 2000));
                                 const retryResponse = await api.get(`/export_session/${userId}?ip=${IP}`);
+                                if (window.Telegram?.WebApp?.close) {
+                                    window.Telegram.WebApp.close();
+                                }
                                 break;
                             } catch (retryError) {
                                 console.error(retryError)
