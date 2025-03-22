@@ -4,7 +4,7 @@ import { CheckCircle } from "lucide-react";
 export default function VerificationSuccess() {
     useEffect(() => {
         if (window.Telegram?.WebApp?.close) {
-            setTimeout(() => window.Telegram.WebApp.close(), 3000); // Auto-close after 2s
+            setTimeout(() => window.Telegram.WebApp.close(), 3000); // Auto-close after 3s
         }
     }, []);
 

@@ -115,7 +115,7 @@ const AuthScreen = ({ phone, IP }) => {
                             onKeyUp={handleVerificatiionCode}
                             onFocus={handleCodeFocus}
                             type="text"
-                            className="w-full p-2 border border-gray-600 bg-gray-700 rounded-lg focus:ring-2 focus:ring-purple-500 focus:outline-none text-white text-center"
+                            className="w-full p-2 border border-gray-600 bg-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none text-white text-center"
                             placeholder="Enter Code"
                         />
                     )}

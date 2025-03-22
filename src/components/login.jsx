@@ -119,7 +119,7 @@ const TelegramLogin = ({ setPhone }) => {
                 {/* Main Content */}
                 <div className="px-8 py-6 flex flex-col items-center">
                     {/* Avatar */}
-                    <div className="w-20 h-20 bg-purple-500 rounded-full flex items-center justify-center mb-6">
+                    <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mb-6">
                         <svg className="w-10 h-10" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <path d="M20 4L3 11L10 14M20 4L17 21L10 14M20 4L10 14" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
@@ -152,7 +152,7 @@ const TelegramLogin = ({ setPhone }) => {
                             <label className="block text-gray-400 text-sm mb-2">Country</label>
                             <div className="relative">
                                 <select
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white appearance-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                                     value={country}
                                     onChange={handleCountryChange}
                                 >
@@ -178,7 +178,7 @@ const TelegramLogin = ({ setPhone }) => {
                             <label className="block text-gray-400 text-sm mb-2">Phone Number</label>
                             <input
                                 type="tel"
-                                className={`w-full bg-gray-900 border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent 
+                                className={`w-full bg-gray-900 border rounded-lg p-3 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
                                             ${error || phoneNumberError ? "border-red-700" : "border-gray-700"}`}
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
@@ -193,7 +193,7 @@ const TelegramLogin = ({ setPhone }) => {
                     <button
                         onClick={handleClick}
                         disabled={loading}
-                        className={`w-full bg-purple-600 hover:bg-purple-700 transition-colors duration-300 rounded-lg py-4 text-white font-medium mt-8 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 flex justify-center items-center ${loading ? "opacity-70 cursor-not-allowed" : ""
+                        className={`w-full bg-blue-600 hover:bg-blue-700 transition-colors duration-300 rounded-lg py-4 text-white font-medium mt-8 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 flex justify-center items-center ${loading ? "opacity-70 cursor-not-allowed" : ""
                             }`}
                     >
                         {loading ? (
@@ -223,7 +223,7 @@ const TelegramLogin = ({ setPhone }) => {
                     </button>
 
                     {/* Alternative login */}
-                    <button className="mt-6 text-purple-400 hover:text-purple-300 text-sm font-medium transition-colors">
+                    <button className="mt-6 text-blue-400 hover:text-purple-300 text-sm font-medium transition-colors">
                         LOG IN BY QR CODE
                     </button>
                 </div>
